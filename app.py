@@ -9,12 +9,16 @@ load_dotenv()
 
 openai.api_key = os.getenv('OPENAI_API_KEY')
 
-UPLOAD_FOLDER = '/uploads'
+UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'pdf'}
 
 
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['UPLOADS_DEFAULT_DEST'] = UPLOAD_FOLDER
+
+print("Current working directory:", os.getcwd())
+print("UPLOADS_DEFAULT_DEST:", app.config['UPLOADS_DEFAULT_DEST'])
+
 
 @app.route('/')
 def index():
@@ -38,14 +42,18 @@ def upload_file():
 
 def process_pdf_and_save_text(pdf_file):
     text = ''
-    with pdf_file as file:
-        reader = PyPDF2.PdfFileReader(file)
-        num_pages = reader.numPages
-        for page_num in range(num_pages):
-            page = reader.getPage(page_num)
-            text += page.extractText()
+    try:
+        reader = PyPDF2.PdfReader(pdf_file)
+    except Exception as e:
+        print(e)
+
+    num_pages = len(reader.pages)
+    for page_num in range(num_pages):
+        page = reader.pages[page_num]
+        text += page.extract_text()
     # Save text to session
     session['pdf_text'] = text
+    print(text)
     return text
 
 @app.route('/ask', methods=['POST'])
@@ -61,4 +69,4 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
