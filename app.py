@@ -1,10 +1,13 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, session
+import PyPDF2
 from dotenv import load_dotenv
 import os
 from werkzeug.utils import secure_filename
 import openai
 
-openai.api_key = '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'
+load_dotenv()
+
+openai.api_key = os.getenv('OPENAI_API_KEY')
 
 UPLOAD_FOLDER = '/uploads'
 ALLOWED_EXTENSIONS = {'pdf'}
@@ -19,13 +22,31 @@ def index():
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
+    print('here check')
     if 'pdf' in request.files:
         pdf = request.files['pdf']
-        pdfs.save(pdf)
-        # Process PDF and extract text
-        # Save text to database
-        return "PDF uploaded successfully"
-    return "No PDF found in request"
+        if pdf.filename == '':
+            return 'No selected file'
+        if pdf:
+            pdf_path = os.path.join(app.config['UPLOADS_DEFAULT_DEST'], pdf.filename)
+            pdf.save(pdf_path)
+            # Process the PDF file, extract text, etc.
+            # You can use PyPDF2 or other libraries to handle PDFs
+            process_pdf_and_save_text(pdf_path)
+            return 'File uploaded successfully'
+    return 'No PDF file uploaded'
+
+def process_pdf_and_save_text(pdf_file):
+    text = ''
+    with pdf_file as file:
+        reader = PyPDF2.PdfFileReader(file)
+        num_pages = reader.numPages
+        for page_num in range(num_pages):
+            page = reader.getPage(page_num)
+            text += page.extractText()
+    # Save text to session
+    session['pdf_text'] = text
+    return text
 
 @app.route('/ask', methods=['POST'])
 def ask_question():
