@@ -1,5 +1,33 @@
-<html>
+<!-- templates/upload.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload PDF</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
 <body>
-    <h1>Chat Document</h1>
+    <div class="container">
+        <h1>Upload PDF</h1>
+        <form action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data" class="upload-form">
+            <label for="pdf-upload" class="file-upload-btn">
+                <i class="fas fa-cloud-upload-alt"></i> Choose PDF
+            </label>
+            <input type="file" id="pdf-upload" name="pdf" accept=".pdf">
+            <button type="submit" class="upload-btn">Upload</button>
+        </form>
+        <div class="chatbox">
+            <div class="chat-messages">
+                <!-- Chat messages will appear here -->
+            </div>
+            <form id="chat-form" class="chat-form">
+                <input type="text" id="user-input" class="user-input" placeholder="Ask a question...">
+                <button type="submit" class="send-btn"><i class="fas fa-paper-plane"></i></button>
+            </form>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
